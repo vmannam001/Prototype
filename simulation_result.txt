@@ -1,0 +1,13 @@
+## 📜 Policy Impact Analysis
+
+### If I roll out this new policy, who is likely to get denied access and why?
+ - User 2:
+   - For read on file1: Denied: Non-admin role
+ - User 4:
+   - For delete on file2: Denied: Non-admin role
+   - For write on db1: Denied: Non-admin role
+ - User 5:
+   - For read on api1: Denied: Non-admin role
+   - For write on file1: Denied: Admin write requires IT department.
+ - User 8:
+   - For read on file2: Denied: Non-admin role

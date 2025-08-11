@@ -1,0 +1,36 @@
+{
+  "description": "Old Policy: Permit for admins or IT department. Special rule for writes on file2.",
+  "rules": [
+    {
+      "conditions": {
+        "action": "write",
+        "resource": "file2",
+        "role": "admin"
+      },
+      "decision": "permitted",
+      "reason": "Allowed by admin role for write on file2"
+    },
+    {
+      "conditions": {
+        "action": "write",
+        "resource": "file2"
+      },
+      "decision": "denied",
+      "reason": "Denied: Non-admin write on file2"
+    },
+    {
+      "conditions": {
+        "role": "admin"
+      },
+      "decision": "permitted",
+      "reason": "Allowed by admin role"
+    },
+    {
+      "conditions": {
+        "department": "IT"
+      },
+      "decision": "permitted",
+      "reason": "Allowed by IT department"
+    }
+  ]
+}

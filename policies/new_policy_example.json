@@ -1,0 +1,34 @@
+{
+  "description": "New Policy: Permit only if role is admin. Explicitly deny non-admins.",
+  "rules": [
+    {
+      "conditions": {
+        "role": "admin",
+        "action": "write",
+        "department": "IT"
+      },
+      "decision": "permitted",
+      "reason": "Allowed: Admin write from IT department."
+    },
+    {
+      "conditions": {
+        "role": "admin",
+        "action": "write"
+      },
+      "decision": "denied",
+      "reason": "Denied: Admin write requires IT department."
+    },
+    {
+        "conditions": {
+            "role": "admin"
+        },
+        "decision": "permitted",
+        "reason": "Allowed by admin role."
+    },
+    {
+        "conditions": {},
+        "decision": "denied",
+        "reason": "Denied: Non-admin role"
+    }
+  ]
+}
