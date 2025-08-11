@@ -1,0 +1,45 @@
+name: Simulate Policy Change
+on:
+  pull_request:
+    paths:
+      - 'policies/**.json'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  simulate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get Changed Policy File
+        id: changed_file
+        uses: tj-actions/changed-files@v41
+        with:
+          # Ensure we only get the first changed file if multiple are in one PR
+          files: |
+            policies/**.json
+          
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Run simulation script
+        # The tj-actions/changed-files action outputs a space-separated list.
+        # We pass the first file from this list to our script.
+        run: |
+          # Note: This assumes one policy is changed per PR.
+          # If multiple could change, you may need a more complex loop.
+          python policy_simulation.py ${{ steps.changed_file.outputs.all_changed_files }}
+
+      - name: Post comment on PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          COMMENT_BODY=$(cat simulation_result.txt)
+          gh pr comment $PR_NUMBER --body "$COMMENT_BODY"
