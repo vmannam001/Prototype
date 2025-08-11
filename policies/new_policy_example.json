@@ -1,5 +1,5 @@
 {
-  "description": "New Policy: Permit only if role is admin. Explicitly deny non-admins.",
+  "description": "New Policy: Permit only if role is admin. Explicitly deny non-admins. For writes, department must also be IT.",
   "rules": [
     {
       "conditions": {
