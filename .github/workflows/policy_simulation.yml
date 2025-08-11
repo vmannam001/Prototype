@@ -12,34 +12,49 @@ jobs:
   simulate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Get path of changed policy file
+        id: changed_file
+        uses: tj-actions/changed-files@v44
+        with:
+          files: policies/**.json
+
+      - name: Checkout PR branch (the 'after' state)
         uses: actions/checkout@v4
 
-      - name: Get Changed Policy File
-        id: changed_file
-        uses: tj-actions/changed-files@v41
+      - name: Checkout base branch (the 'before' state)
+        uses: actions/checkout@v4
         with:
-          # Ensure we only get the first changed file if multiple are in one PR
-          files: |
-            policies/**.json
-          
+          # This ref points to the commit the PR is being merged into
+          ref: ${{ github.event.pull_request.base.sha }}
+          # Checkout the old version into a 'base' subdirectory
+          path: 'base'
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: Run simulation script
-        # The tj-actions/changed-files action outputs a space-separated list.
-        # We pass the first file from this list to our script.
+        id: run_script
         run: |
-          # Note: This assumes one policy is changed per PR.
-          # If multiple could change, you may need a more complex loop.
-          python policy_simulation.py ${{ steps.changed_file.outputs.all_changed_files }}
+          # The path to the modified file, e.g., "policies/my_policy.json"
+          CHANGED_FILE="${{ steps.changed_file.outputs.all_changed_files }}"
+
+          # If no file was found, exit gracefully.
+          if [ -z "$CHANGED_FILE" ]; then
+            echo "No policy file changed. Exiting."
+            exit 0
+          fi
+
+          # The script is called with two arguments: the old path and the new path.
+          python policy_simulation.py "base/${CHANGED_FILE}" "${CHANGED_FILE}"
 
       - name: Post comment on PR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+        # This step only runs if the simulation script actually ran.
+        if: steps.run_script.outcome == 'success'
         run: |
           COMMENT_BODY=$(cat simulation_result.txt)
           gh pr comment $PR_NUMBER --body "$COMMENT_BODY"
